@@ -27,12 +27,10 @@ function Login() {
     const { name, value } =
       event.target;
 
-    setFormData(
-      (previousData) => ({
-        ...previousData,
-        [name]: value,
-      })
-    );
+    setFormData((previousData) => ({
+      ...previousData,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (
@@ -55,12 +53,15 @@ function Login() {
         response.data
       );
 
-      const { token, user } =
-        response.data;
+      const token =
+        response.data.token;
+
+      const user =
+        response.data.user;
 
       if (!token) {
         throw new Error(
-          "Login token was not received."
+          "Token was not received from backend"
         );
       }
 
@@ -69,9 +70,25 @@ function Login() {
         token
       );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
+      if (user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(user)
+        );
+      }
+
+      console.log(
+        "Saved token:",
+        localStorage.getItem(
+          "token"
+        )
+      );
+
+      console.log(
+        "Saved user:",
+        localStorage.getItem(
+          "user"
+        )
       );
 
       navigate(
@@ -80,39 +97,31 @@ function Login() {
           replace: true,
         }
       );
-    }catch (error) {
-  console.error("LOGIN ERROR:", error);
+    } catch (error) {
+      console.error(
+        "Login error:",
+        error
+      );
 
-  if (error.code === "ECONNABORTED") {
-    setMessage(
-      "Backend is taking too long to respond. Please try again."
-    );
-  } else if (error.response) {
-    setMessage(
-      error.response.data?.message ||
-      `Login failed with status ${error.response.status}`
-    );
-  } else if (error.request) {
-    setMessage(
-      "Cannot connect to the backend server."
-    );
-  } else {
-    setMessage(
-      "Login failed. Please try again."
-    );
-  }
-} finally {
-  setLoading(false);
-}
+      setMessage(
+        error.response?.data
+          ?.message ||
+          error.message ||
+          "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-page">
       <div className="login-container">
 
-        {/* Left information section */}
+        {/* Left section */}
 
         <section className="login-brand-section">
+
           <div className="brand-logo">
             AC
           </div>
@@ -136,6 +145,7 @@ function Login() {
           <div className="login-features">
 
             <div className="login-feature">
+
               <span>
                 🎓
               </span>
@@ -151,9 +161,11 @@ function Login() {
                   and graduation year.
                 </p>
               </div>
+
             </div>
 
             <div className="login-feature">
+
               <span>
                 🤝
               </span>
@@ -169,9 +181,11 @@ function Login() {
                   guidance.
                 </p>
               </div>
+
             </div>
 
             <div className="login-feature">
+
               <span>
                 🌐
               </span>
@@ -187,12 +201,14 @@ function Login() {
                   events.
                 </p>
               </div>
+
             </div>
 
           </div>
+
         </section>
 
-        {/* Right login section */}
+        {/* Login form */}
 
         <section className="login-form-section">
 
@@ -228,8 +244,7 @@ function Login() {
                 id="email"
                 type="email"
                 name="email"
-                placeholder=
-                  "Enter your email"
+                placeholder="Enter your email"
                 value={
                   formData.email
                 }
@@ -254,8 +269,7 @@ function Login() {
                 id="password"
                 type="password"
                 name="password"
-                placeholder=
-                  "Enter your password"
+                placeholder="Enter your password"
                 value={
                   formData.password
                 }
@@ -274,21 +288,29 @@ function Login() {
               type="submit"
               disabled={loading}
             >
-              {loading
-                ? "Logging in..."
-                : "Login to AlumniConnect"}
+
+              {
+                loading
+                  ? "Logging in..."
+                  : "Login to AlumniConnect"
+              }
+
             </button>
 
             {message && (
+
               <p className="login-message">
                 {message}
               </p>
+
             )}
 
             <div className="login-divider">
+
               <span>
                 New to AlumniConnect?
               </span>
+
             </div>
 
             <Link
