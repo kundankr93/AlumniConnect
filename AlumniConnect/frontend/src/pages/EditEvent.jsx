@@ -1,465 +1,287 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import API from "../api/axios";
-import "./CreateEvent.css";
+
+import "./EditEvent.css";
 
 function EditEvent() {
   const navigate = useNavigate();
 
   const { id } = useParams();
 
-  const [formData, setFormData] =
-    useState({
-      title: "",
-      description: "",
-      eventDate: "",
-      location: "",
-      mode: "offline",
-      meetingLink: "",
-    });
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    eventDate: "",
+    mode: "online",
+    location: "",
+    meetingLink: "",
+  });
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [updating, setUpdating] =
-    useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [message, setMessage] = useState("");
 
-  // Fetch the selected event
+  const [error, setError] = useState("");
+
+  // Convert MongoDB date into
+  // datetime-local input format
+  const formatDateForInput = (date) => {
+    if (!date) {
+      return "";
+    }
+
+    const eventDate = new Date(date);
+
+    const timezoneOffset = eventDate.getTimezoneOffset() * 60000;
+
+    return new Date(eventDate.getTime() - timezoneOffset)
+      .toISOString()
+      .slice(0, 16);
+  };
+
+  // Fetch existing event
   useEffect(() => {
-    const fetchEvent =
-      async () => {
-        try {
-          setLoading(true);
-          setError("");
+    const fetchEvent = async () => {
+      try {
+        setLoading(true);
 
-          const response =
-            await API.get(
-              "/events"
-            );
+        setError("");
 
-          const allEvents =
-            response.data.events ||
-            [];
+        const response = await API.get(`/events/${id}`);
 
-          const selectedEvent =
-            allEvents.find(
-              (event) =>
-                event._id === id
-            );
+        const event = response.data.event || response.data;
 
-          if (!selectedEvent) {
-            setError(
-              "Event not found"
-            );
+        setFormData({
+          title: event.title || "",
 
-            return;
-          }
+          description: event.description || "",
 
-          // Convert MongoDB date into
-          // datetime-local format
-          const date =
-            new Date(
-              selectedEvent.eventDate
-            );
+          eventDate: formatDateForInput(event.eventDate || event.date),
 
-          const timezoneOffset =
-            date.getTimezoneOffset() *
-            60000;
+          mode: event.mode || "online",
 
-          const localDate =
-            new Date(
-              date.getTime() -
-                timezoneOffset
-            )
-              .toISOString()
-              .slice(0, 16);
+          location: event.location || "",
 
-          setFormData({
-            title:
-              selectedEvent.title ||
-              "",
+          meetingLink: event.meetingLink || "",
+        });
+      } catch (error) {
+        console.error("Fetch event error:", error);
 
-            description:
-              selectedEvent.description ||
-              "",
-
-            eventDate:
-              localDate,
-
-            location:
-              selectedEvent.location ||
-              "",
-
-            mode:
-              selectedEvent.mode ||
-              "offline",
-
-            meetingLink:
-              selectedEvent.meetingLink ||
-              "",
-          });
-        } catch (error) {
-          console.error(
-            "Fetch event error:",
-            error
-          );
-
-          setError(
-            error.response?.data
-              ?.message ||
-              "Unable to load event"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
+        setError(error.response?.data?.message || "Unable to load event");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchEvent();
   }, [id]);
 
   // Update input values
-  const handleChange = (
-    event
-  ) => {
-    const {
-      name,
-      value,
-    } = event.target;
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-    setFormData(
-      (previousData) => ({
-        ...previousData,
+    setFormData((previousData) => ({
+      ...previousData,
 
-        [name]: value,
-
-        ...(name === "mode" &&
-        value === "offline"
-          ? {
-              meetingLink: "",
-            }
-          : {}),
-      })
-    );
+      [name]: value,
+    }));
   };
 
   // Update event
-  const handleSubmit =
-    async (event) => {
-      event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSaving(true);
+
+      setMessage("");
 
       setError("");
 
-      if (
-        !formData.title.trim() ||
-        !formData.description.trim() ||
-        !formData.eventDate ||
-        !formData.location.trim()
-      ) {
-        setError(
-          "Please complete all required fields"
-        );
+      const updatedEvent = {
+        title: formData.title.trim(),
 
-        return;
-      }
+        description: formData.description.trim(),
 
-      if (
-        formData.mode ===
-          "online" &&
-        !formData.meetingLink.trim()
-      ) {
-        setError(
-          "Meeting link is required for an online event"
-        );
+        eventDate: formData.eventDate,
 
-        return;
-      }
+        mode: formData.mode,
 
-      try {
-        setUpdating(true);
+        location: formData.location.trim(),
 
-        const response =
-          await API.patch(
-            `/events/${id}`,
-            {
-              title:
-                formData.title.trim(),
+        meetingLink: formData.meetingLink.trim(),
+      };
 
-              description:
-                formData.description.trim(),
+      const response = await API.put(`/events/${id}`, updatedEvent);
 
-              eventDate:
-                new Date(
-                  formData.eventDate
-                ).toISOString(),
+      setMessage(response.data.message || "Event updated successfully");
 
-              location:
-                formData.location.trim(),
-
-              mode:
-                formData.mode,
-
-              meetingLink:
-                formData.mode ===
-                "online"
-                  ? formData.meetingLink.trim()
-                  : "",
-            }
-          );
-
-        alert(
-          response.data.message ||
-            "Event updated successfully"
-        );
-
+      setTimeout(() => {
         navigate("/events");
-      } catch (error) {
-        console.error(
-          "Update event error:",
-          error
-        );
+      }, 1000);
+    } catch (error) {
+      console.error("Update event error:", error);
 
-        setError(
-          error.response?.data
-            ?.message ||
-            "Unable to update event"
-        );
-      } finally {
-        setUpdating(false);
-      }
-    };
+      setError(error.response?.data?.message || "Unable to update event");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
-    return (
-      <div className="create-event-page">
-        <p className="create-event-status">
-          Loading event...
-        </p>
-      </div>
-    );
+    return <div className="edit-event-status">Loading event...</div>;
   }
 
   return (
-    <div className="create-event-page">
-      <header className="create-event-header">
-        <button
-          type="button"
-          className="create-event-back"
-          onClick={() =>
-            navigate("/events")
-          }
-        >
-          ← Events
-        </button>
+    <div className="edit-event-page">
+      <header className="edit-event-header">
+        <div className="edit-event-header-content">
+          <button
+            type="button"
+            className="edit-event-back"
+            onClick={() => navigate("/events")}
+          >
+            ← Events
+          </button>
 
-        <h1>
-          Edit Event
-        </h1>
+          <h1>Edit Event</h1>
 
-        <p>
-          Update your event
-          information.
-        </p>
+          <p>Update your event information.</p>
+        </div>
       </header>
 
-      <main className="create-event-content">
-        <form
-          className="create-event-form"
-          onSubmit={
-            handleSubmit
-          }
-        >
-          {error && (
-            <p className="create-event-error">
-              {error}
-            </p>
-          )}
+      <main className="edit-event-content">
+        <form className="edit-event-form" onSubmit={handleSubmit}>
+          {message && <p className="edit-event-success">{message}</p>}
 
-          <div className="form-group">
-            <label
-              htmlFor="title"
-            >
-              Event Title
-            </label>
+          {error && <p className="edit-event-error">{error}</p>}
+
+          {/* Event title */}
+
+          <div className="edit-event-field">
+            <label htmlFor="title">Event Title</label>
 
             <input
               id="title"
-              name="title"
               type="text"
-              value={
-                formData.title
-              }
-              onChange={
-                handleChange
-              }
-              maxLength={150}
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Enter event title"
+              maxLength="150"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label
-              htmlFor="description"
-            >
-              Description
-            </label>
+          {/* Description */}
+
+          <div className="edit-event-field">
+            <label htmlFor="description">Description</label>
 
             <textarea
               id="description"
               name="description"
-              value={
-                formData.description
-              }
-              onChange={
-                handleChange
-              }
-              maxLength={2000}
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe the event, topics, speakers, and what participants will learn..."
+              rows="6"
+              maxLength="2000"
               required
             />
 
-            <span>
-              {
-                formData
-                  .description
-                  .length
-              }
-              /2000
-            </span>
+            <small className="description-count">
+              {formData.description.length}
+              /2000 characters
+            </small>
           </div>
 
-          <div className="form-group">
-            <label
-              htmlFor="eventDate"
-            >
-              Event Date and Time
-            </label>
+          {/* Event date */}
+
+          <div className="edit-event-field">
+            <label htmlFor="eventDate">Event Date and Time</label>
 
             <input
               id="eventDate"
-              name="eventDate"
               type="datetime-local"
-              value={
-                formData.eventDate
-              }
-              onChange={
-                handleChange
-              }
+              name="eventDate"
+              value={formData.eventDate}
+              onChange={handleChange}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label
-              htmlFor="mode"
-            >
-              Event Mode
-            </label>
+          {/* Event mode */}
+
+          <div className="edit-event-field">
+            <label htmlFor="mode">Event Mode</label>
 
             <select
               id="mode"
               name="mode"
-              value={
-                formData.mode
-              }
-              onChange={
-                handleChange
-              }
+              value={formData.mode}
+              onChange={handleChange}
               required
             >
-              <option value="offline">
-                Offline
-              </option>
+              <option value="online">Online</option>
 
-              <option value="online">
-                Online
-              </option>
+              <option value="offline">Offline</option>
+
+              <option value="hybrid">Hybrid</option>
             </select>
           </div>
 
-          <div className="form-group">
-            <label
-              htmlFor="location"
-            >
-              Location
-            </label>
+          {/* Location */}
+
+          <div className="edit-event-field">
+            <label htmlFor="location">Location</label>
 
             <input
               id="location"
-              name="location"
               type="text"
-              value={
-                formData.location
-              }
-              onChange={
-                handleChange
-              }
-              placeholder={
-                formData.mode ===
-                "online"
-                  ? "Google Meet, Zoom, Microsoft Teams..."
-                  : "Event venue"
-              }
-              required
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Enter event location"
             />
           </div>
 
-          {formData.mode ===
-            "online" && (
-            <div className="form-group">
-              <label
-                htmlFor="meetingLink"
-              >
-                Meeting Link
-              </label>
+          {/* Meeting link */}
 
-              <input
-                id="meetingLink"
-                name="meetingLink"
-                type="url"
-                value={
-                  formData.meetingLink
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="https://meet.google.com/..."
-                required
-              />
-            </div>
-          )}
+          <div className="edit-event-field">
+            <label htmlFor="meetingLink">Meeting Link</label>
 
-          <div className="create-event-actions">
+            <input
+              id="meetingLink"
+              type="url"
+              name="meetingLink"
+              value={formData.meetingLink}
+              onChange={handleChange}
+              placeholder="https://meet.google.com/..."
+            />
+          </div>
+
+          {/* Buttons */}
+
+          <div className="edit-event-actions">
             <button
               type="button"
               className="cancel-event-button"
-              disabled={updating}
-              onClick={() =>
-                navigate(
-                  "/events"
-                )
-              }
+              onClick={() => navigate("/events")}
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="submit-event-button"
-              disabled={updating}
+              className="update-event-button"
+              disabled={saving}
             >
-              {updating
-                ? "Updating..."
-                : "Save Changes"}
+              {saving ? "Updating..." : "Update Event"}
             </button>
           </div>
         </form>

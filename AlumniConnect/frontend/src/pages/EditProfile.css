@@ -267,3 +267,61 @@
     width: 100%;
   }
 }
+
+/* Description textarea */
+
+.edit-event-form textarea {
+  width: 100%;
+  min-height: 150px;
+
+  padding: 15px 17px;
+
+  color: #1f2937;
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 16px;
+  line-height: 1.6;
+
+  outline: none;
+
+  resize: vertical;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.edit-event-form textarea:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      37,
+      99,
+      235,
+      0.12
+    );
+}
+
+/* Character counter */
+
+.description-count {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  text-align: right;
+}
