@@ -80,30 +80,30 @@ function Login() {
           replace: true,
         }
       );
-    } catch (error) {
-      console.error(
-        "Login error:",
-        error
-      );
+    }catch (error) {
+  console.error("LOGIN ERROR:", error);
 
-      if (
-        error.code ===
-        "ECONNABORTED"
-      ) {
-        setMessage(
-          "The server is taking too long to respond. Please try again."
-        );
-      } else {
-        setMessage(
-          error.response?.data
-            ?.message ||
-            error.message ||
-            "Login failed. Please check your email and password."
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  if (error.code === "ECONNABORTED") {
+    setMessage(
+      "Backend is taking too long to respond. Please try again."
+    );
+  } else if (error.response) {
+    setMessage(
+      error.response.data?.message ||
+      `Login failed with status ${error.response.status}`
+    );
+  } else if (error.request) {
+    setMessage(
+      "Cannot connect to the backend server."
+    );
+  } else {
+    setMessage(
+      "Login failed. Please try again."
+    );
+  }
+} finally {
+  setLoading(false);
+}
   };
 
   return (
