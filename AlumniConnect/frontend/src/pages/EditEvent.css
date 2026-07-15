@@ -1,0 +1,455 @@
+* {
+  box-sizing: border-box;
+}
+
+.edit-event-page {
+  min-height: 100vh;
+  color: #14264d;
+  background-color: #f3f6fc;
+}
+
+/* Header */
+
+.edit-event-header {
+  padding: 40px 7%;
+  color: white;
+  background: linear-gradient(
+    120deg,
+    #2563eb,
+    #4338ca
+  );
+}
+
+.edit-event-header-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.edit-event-back {
+  padding: 10px 18px;
+  margin-bottom: 25px;
+
+  color: white;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.18
+  );
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 16px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.edit-event-back:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.3
+  );
+
+  transform: translateY(-1px);
+}
+
+.edit-event-header h1 {
+  margin: 0;
+
+  font-size: 42px;
+  line-height: 1.2;
+}
+
+.edit-event-header p {
+  margin: 10px 0 0;
+
+  color: #dbeafe;
+
+  font-size: 18px;
+}
+
+/* Main content */
+
+.edit-event-content {
+  width: 90%;
+  max-width: 1000px;
+
+  margin: 45px auto;
+
+  padding-bottom: 50px;
+}
+
+/* Form card */
+
+.edit-event-card {
+  padding: 38px;
+
+  background-color: white;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 35px
+    rgba(
+      30,
+      64,
+      175,
+      0.1
+    );
+}
+
+.edit-event-card h2 {
+  margin:
+    0
+    0
+    30px;
+
+  color: #172554;
+
+  font-size: 28px;
+}
+
+/* Form */
+
+.edit-event-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 23px;
+}
+
+.edit-event-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.edit-event-field label {
+  color: #263b60;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.edit-event-field input,
+.edit-event-field textarea,
+.edit-event-field select {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  color: #172554;
+  background-color: #f8fafc;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 16px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.edit-event-field input:focus,
+.edit-event-field textarea:focus,
+.edit-event-field select:focus {
+  background-color: white;
+
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      37,
+      99,
+      235,
+      0.12
+    );
+}
+
+/* Description */
+
+.edit-event-field textarea {
+  min-height: 150px;
+
+  line-height: 1.6;
+
+  resize: vertical;
+}
+
+.description-counter {
+  margin-top: 2px;
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  text-align: right;
+}
+
+/* Two-column fields */
+
+.edit-event-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap: 22px;
+}
+
+/* Success and error messages */
+
+.edit-event-success {
+  padding: 14px 17px;
+  margin-bottom: 24px;
+
+  color: #166534;
+  background-color: #dcfce7;
+
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
+
+  text-align: center;
+}
+
+.edit-event-error {
+  padding: 14px 17px;
+  margin-bottom: 24px;
+
+  color: #b91c1c;
+  background-color: #fee2e2;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  text-align: center;
+}
+
+/* Buttons */
+
+.edit-event-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 15px;
+
+  padding-top: 10px;
+}
+
+.cancel-event-button,
+.update-event-button {
+  min-width: 145px;
+
+  padding: 13px 22px;
+
+  border-radius: 9px;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.cancel-event-button {
+  color: #334155;
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+}
+
+.cancel-event-button:hover {
+  background-color: #f1f5f9;
+
+  transform: translateY(-1px);
+}
+
+.update-event-button {
+  color: white;
+  background-color: #2563eb;
+
+  border: none;
+
+  box-shadow:
+    0 5px 14px
+    rgba(
+      37,
+      99,
+      235,
+      0.2
+    );
+}
+
+.update-event-button:hover {
+  background-color: #1d4ed8;
+
+  transform: translateY(-1px);
+}
+
+.update-event-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+/* Loading state */
+
+.edit-event-loading {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #2563eb;
+  background-color: #f3f6fc;
+
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Error page */
+
+.edit-event-error-page {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 20px;
+
+  padding: 30px;
+
+  color: #b91c1c;
+  background-color: #f3f6fc;
+
+  text-align: center;
+}
+
+.edit-event-error-page button {
+  padding: 12px 22px;
+
+  color: white;
+  background-color: #2563eb;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.edit-event-error-page button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Tablet */
+
+@media (max-width: 800px) {
+  .edit-event-header {
+    padding:
+      35px
+      5%;
+  }
+
+  .edit-event-header h1 {
+    font-size: 36px;
+  }
+
+  .edit-event-content {
+    width: 92%;
+
+    margin:
+      30px
+      auto;
+  }
+
+  .edit-event-card {
+    padding: 28px;
+  }
+
+  .edit-event-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 550px) {
+  .edit-event-header {
+    padding:
+      28px
+      5%;
+  }
+
+  .edit-event-header h1 {
+    font-size: 31px;
+  }
+
+  .edit-event-header p {
+    font-size: 16px;
+  }
+
+  .edit-event-content {
+    width: 94%;
+
+    margin:
+      22px
+      auto;
+  }
+
+  .edit-event-card {
+    padding:
+      25px
+      18px;
+
+    border-radius: 13px;
+  }
+
+  .edit-event-card h2 {
+    font-size: 24px;
+  }
+
+  .edit-event-actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancel-event-button,
+  .update-event-button {
+    width: 100%;
+  }
+}
