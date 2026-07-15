@@ -50,8 +50,19 @@ function Login() {
           formData
         );
 
+      console.log(
+        "Login response:",
+        response.data
+      );
+
       const { token, user } =
         response.data;
+
+      if (!token) {
+        throw new Error(
+          "Login token was not received."
+        );
+      }
 
       localStorage.setItem(
         "token",
@@ -70,11 +81,26 @@ function Login() {
         }
       );
     } catch (error) {
-      setMessage(
-        error.response?.data
-          ?.message ||
-          "Login failed. Please try again."
+      console.error(
+        "Login error:",
+        error
       );
+
+      if (
+        error.code ===
+        "ECONNABORTED"
+      ) {
+        setMessage(
+          "The server is taking too long to respond. Please try again."
+        );
+      } else {
+        setMessage(
+          error.response?.data
+            ?.message ||
+            error.message ||
+            "Login failed. Please check your email and password."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -108,6 +134,7 @@ function Login() {
           </p>
 
           <div className="login-features">
+
             <div className="login-feature">
               <span>
                 🎓
@@ -161,16 +188,19 @@ function Login() {
                 </p>
               </div>
             </div>
+
           </div>
         </section>
 
         {/* Right login section */}
 
         <section className="login-form-section">
+
           <form
             className="login-card"
             onSubmit={handleSubmit}
           >
+
             <div className="mobile-brand">
               AlumniConnect
             </div>
@@ -189,6 +219,7 @@ function Login() {
             </p>
 
             <div className="form-group">
+
               <label htmlFor="email">
                 Email address
               </label>
@@ -208,9 +239,11 @@ function Login() {
                 autoComplete="email"
                 required
               />
+
             </div>
 
             <div className="form-group">
+
               <label
                 htmlFor="password"
               >
@@ -233,6 +266,7 @@ function Login() {
                   "current-password"
                 required
               />
+
             </div>
 
             <button
@@ -264,7 +298,9 @@ function Login() {
             >
               Create a new account
             </Link>
+
           </form>
+
         </section>
 
       </div>
