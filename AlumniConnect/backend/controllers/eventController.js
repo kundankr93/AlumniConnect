@@ -1,125 +1,85 @@
 import Event from "../models/Event.js";
 
-// Create an event
+/*
+================================================
+CREATE EVENT
+POST /api/events
+Access: Alumni
+================================================
+*/
+
 export const createEvent = async (req, res) => {
   try {
     const {
       title,
       description,
-      eventDate,
+      date,
       location,
-      mode,
+      eventType,
       meetingLink,
-    } = req.body || {};
+    } = req.body;
 
-    if (
-      !title ||
-      !description ||
-      !eventDate ||
-      !location ||
-      !mode
-    ) {
+    if (!title || !description || !date) {
       return res.status(400).json({
         success: false,
         message:
-          "Title, description, event date, location, and mode are required",
-      });
-    }
-
-    const eventMode = mode.toLowerCase();
-
-    if (
-      !["online", "offline"].includes(
-        eventMode
-      )
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Event mode must be online or offline",
-      });
-    }
-
-    const parsedDate = new Date(eventDate);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event date",
-      });
-    }
-
-    if (parsedDate <= new Date()) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Event date must be in the future",
-      });
-    }
-
-    if (
-      eventMode === "online" &&
-      !meetingLink?.trim()
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Meeting link is required for an online event",
+          "Title, description, and event date are required",
       });
     }
 
     const event = await Event.create({
-      title: title.trim(),
-      description: description.trim(),
-      eventDate: parsedDate,
-      location: location.trim(),
-      mode: eventMode,
-      meetingLink:
-        meetingLink?.trim() || "",
+      title,
+      description,
+      date,
+      location,
+      eventType,
+      meetingLink,
       createdBy: req.user._id,
     });
 
-    await event.populate(
+    const populatedEvent = await Event.findById(
+      event._id
+    ).populate(
       "createdBy",
       "name email role profileImage"
     );
 
     return res.status(201).json({
       success: true,
-      message:
-        "Event created successfully",
-      event,
+      message: "Event created successfully",
+      event: populatedEvent,
     });
   } catch (error) {
     console.error(
-      `Create event error: ${error.message}`
+      "Create event error:",
+      error
     );
 
     return res.status(500).json({
       success: false,
-      message:
-        "Server error while creating event",
+      message: "Failed to create event",
+      error: error.message,
     });
   }
 };
 
-// Get all upcoming events
-export const getAllEvents = async (
-  req,
-  res
-) => {
+/*
+================================================
+GET ALL EVENTS
+GET /api/events
+Access: Logged-in users
+================================================
+*/
+
+export const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find({
-      eventDate: {
-        $gte: new Date(),
-      },
-    })
+    const events = await Event.find()
       .populate(
         "createdBy",
         "name email role profileImage"
       )
       .sort({
-        eventDate: 1,
+        date: 1,
       });
 
     return res.status(200).json({
@@ -129,18 +89,76 @@ export const getAllEvents = async (
     });
   } catch (error) {
     console.error(
-      `Get all events error: ${error.message}`
+      "Get all events error:",
+      error
     );
 
     return res.status(500).json({
       success: false,
-      message:
-        "Server error while fetching events",
+      message: "Failed to fetch events",
+      error: error.message,
     });
   }
 };
 
-// Student registers for an event
+/*
+================================================
+GET ONE EVENT BY ID
+GET /api/events/:id
+Access: Logged-in users
+================================================
+*/
+
+export const getEventById = async (
+  req,
+  res
+) => {
+  try {
+    const event = await Event.findById(
+      req.params.id
+    )
+      .populate(
+        "createdBy",
+        "name email role profileImage"
+      )
+      .populate(
+        "registeredUsers",
+        "name email role profileImage"
+      );
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      event,
+    });
+  } catch (error) {
+    console.error(
+      "Get event by ID error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch event",
+      error: error.message,
+    });
+  }
+};
+
+/*
+================================================
+REGISTER FOR EVENT
+POST /api/events/:id/register
+Access: Student
+================================================
+*/
+
 export const registerForEvent = async (
   req,
   res
@@ -154,14 +172,6 @@ export const registerForEvent = async (
       return res.status(404).json({
         success: false,
         message: "Event not found",
-      });
-    }
-
-    if (event.eventDate <= new Date()) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Registration is closed because this event has already passed",
       });
     }
 
@@ -189,65 +199,76 @@ export const registerForEvent = async (
     return res.status(200).json({
       success: true,
       message:
-        "Registered for event successfully",
-      eventId: event._id,
-      registeredUsersCount:
-        event.registeredUsers.length,
+        "Registered for the event successfully",
+      event,
     });
   } catch (error) {
     console.error(
-      `Register event error: ${error.message}`
+      "Register event error:",
+      error
     );
-
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
-    }
 
     return res.status(500).json({
       success: false,
       message:
-        "Server error while registering for event",
+        "Failed to register for the event",
+      error: error.message,
     });
   }
 };
 
-// View events registered by logged-in student
-export const getMyRegisteredEvents =
-  async (req, res) => {
-    try {
-      const events = await Event.find({
-        registeredUsers: req.user._id,
-      })
-        .populate(
-          "createdBy",
-          "name email role profileImage"
-        )
-        .sort({
-          eventDate: 1,
-        });
+/*
+================================================
+GET MY REGISTERED EVENTS
+GET /api/events/my-events
+Access: Student
+================================================
+*/
 
-      return res.status(200).json({
-        success: true,
-        count: events.length,
-        events,
+export const getMyRegisteredEvents = async (
+  req,
+  res
+) => {
+  try {
+    const events = await Event.find({
+      registeredUsers: req.user._id,
+    })
+      .populate(
+        "createdBy",
+        "name email role profileImage"
+      )
+      .sort({
+        date: 1,
       });
-    } catch (error) {
-      console.error(
-        `Get registered events error: ${error.message}`
-      );
 
-      return res.status(500).json({
-        success: false,
-        message:
-          "Server error while fetching registered events",
-      });
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      count: events.length,
+      events,
+    });
+  } catch (error) {
+    console.error(
+      "Get registered events error:",
+      error
+    );
 
-// Cancel event registration
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to fetch registered events",
+      error: error.message,
+    });
+  }
+};
+
+/*
+================================================
+CANCEL EVENT REGISTRATION
+DELETE /api/events/:id/register
+Access: Student
+================================================
+*/
+
 export const cancelRegistration = async (
   req,
   res
@@ -292,30 +313,30 @@ export const cancelRegistration = async (
       success: true,
       message:
         "Event registration cancelled successfully",
-      registeredUsersCount:
-        event.registeredUsers.length,
     });
   } catch (error) {
     console.error(
-      `Cancel registration error: ${error.message}`
+      "Cancel registration error:",
+      error
     );
-
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
-    }
 
     return res.status(500).json({
       success: false,
       message:
-        "Server error while cancelling registration",
+        "Failed to cancel event registration",
+      error: error.message,
     });
   }
 };
 
-// Event creator views registered students
+/*
+================================================
+GET REGISTERED USERS
+GET /api/events/:id/registered-users
+Access: Event creator
+================================================
+*/
+
 export const getRegisteredUsers = async (
   req,
   res
@@ -342,7 +363,7 @@ export const getRegisteredUsers = async (
       return res.status(403).json({
         success: false,
         message:
-          "Only the event creator can view registered users",
+          "You can only view registrations for your own events",
       });
     }
 
@@ -350,30 +371,31 @@ export const getRegisteredUsers = async (
       success: true,
       count:
         event.registeredUsers.length,
-      registeredUsers:
-        event.registeredUsers,
+      users: event.registeredUsers,
     });
   } catch (error) {
     console.error(
-      `Get registered users error: ${error.message}`
+      "Get registered users error:",
+      error
     );
-
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
-    }
 
     return res.status(500).json({
       success: false,
       message:
-        "Server error while fetching registered users",
+        "Failed to fetch registered users",
+      error: error.message,
     });
   }
 };
 
-// Event creator updates event
+/*
+================================================
+UPDATE EVENT
+PATCH /api/events/:id
+Access: Event creator
+================================================
+*/
+
 export const updateEvent = async (
   req,
   res
@@ -397,150 +419,67 @@ export const updateEvent = async (
       return res.status(403).json({
         success: false,
         message:
-          "You can update only your own event",
+          "You can only update your own events",
       });
     }
 
-    const {
-      title,
-      description,
-      eventDate,
-      location,
-      mode,
-      meetingLink,
-    } = req.body || {};
+    const allowedFields = [
+      "title",
+      "description",
+      "date",
+      "location",
+      "eventType",
+      "meetingLink",
+    ];
 
-    if (title !== undefined) {
-      if (!title.trim()) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Event title cannot be empty",
-        });
-      }
-
-      event.title = title.trim();
-    }
-
-    if (description !== undefined) {
-      if (!description.trim()) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Event description cannot be empty",
-        });
-      }
-
-      event.description =
-        description.trim();
-    }
-
-    if (eventDate !== undefined) {
-      const parsedDate =
-        new Date(eventDate);
-
+    allowedFields.forEach((field) => {
       if (
-        Number.isNaN(
-          parsedDate.getTime()
-        ) ||
-        parsedDate <= new Date()
+        req.body[field] !== undefined
       ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Event date must be a valid future date",
-        });
+        event[field] =
+          req.body[field];
       }
-
-      event.eventDate = parsedDate;
-    }
-
-    if (location !== undefined) {
-      if (!location.trim()) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Event location cannot be empty",
-        });
-      }
-
-      event.location =
-        location.trim();
-    }
-
-    if (mode !== undefined) {
-      const eventMode =
-        mode.toLowerCase();
-
-      if (
-        !["online", "offline"].includes(
-          eventMode
-        )
-      ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Event mode must be online or offline",
-        });
-      }
-
-      event.mode = eventMode;
-    }
-
-    if (meetingLink !== undefined) {
-      event.meetingLink =
-        meetingLink.trim();
-    }
-
-    if (
-      event.mode === "online" &&
-      !event.meetingLink
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Meeting link is required for an online event",
-      });
-    }
-
-    if (event.mode === "offline") {
-      event.meetingLink = "";
-    }
+    });
 
     await event.save();
 
-    await event.populate(
-      "createdBy",
-      "name email role profileImage"
-    );
+    const updatedEvent =
+      await Event.findById(
+        event._id
+      ).populate(
+        "createdBy",
+        "name email role profileImage"
+      );
 
     return res.status(200).json({
       success: true,
       message:
         "Event updated successfully",
-      event,
+      event: updatedEvent,
     });
   } catch (error) {
     console.error(
-      `Update event error: ${error.message}`
+      "Update event error:",
+      error
     );
-
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
-    }
 
     return res.status(500).json({
       success: false,
       message:
-        "Server error while updating event",
+        "Failed to update event",
+      error: error.message,
     });
   }
 };
 
-// Event creator deletes event
+/*
+================================================
+DELETE EVENT
+DELETE /api/events/:id
+Access: Event creator
+================================================
+*/
+
 export const deleteEvent = async (
   req,
   res
@@ -564,7 +503,7 @@ export const deleteEvent = async (
       return res.status(403).json({
         success: false,
         message:
-          "You can delete only your own event",
+          "You can only delete your own events",
       });
     }
 
@@ -577,20 +516,15 @@ export const deleteEvent = async (
     });
   } catch (error) {
     console.error(
-      `Delete event error: ${error.message}`
+      "Delete event error:",
+      error
     );
-
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
-    }
 
     return res.status(500).json({
       success: false,
       message:
-        "Server error while deleting event",
+        "Failed to delete event",
+      error: error.message,
     });
   }
 };

@@ -3,6 +3,7 @@ import express from "express";
 import {
   createEvent,
   getAllEvents,
+  getEventById,
   registerForEvent,
   getMyRegisteredEvents,
   cancelRegistration,
@@ -18,14 +19,28 @@ import {
 
 const router = express.Router();
 
-// View all upcoming events
+/*
+================================================
+GET ALL EVENTS
+Route: GET /api/events
+Access: Logged-in users
+================================================
+*/
+
 router.get(
   "/",
   protect,
   getAllEvents
 );
 
-// Student views registered events
+/*
+================================================
+GET MY REGISTERED EVENTS
+Route: GET /api/events/my-events
+Access: Student
+================================================
+*/
+
 router.get(
   "/my-events",
   protect,
@@ -33,7 +48,14 @@ router.get(
   getMyRegisteredEvents
 );
 
-// Alumni creates an event
+/*
+================================================
+CREATE EVENT
+Route: POST /api/events
+Access: Alumni
+================================================
+*/
+
 router.post(
   "/",
   protect,
@@ -41,7 +63,14 @@ router.post(
   createEvent
 );
 
-// Student registers for an event
+/*
+================================================
+REGISTER FOR EVENT
+Route: POST /api/events/:id/register
+Access: Student
+================================================
+*/
+
 router.post(
   "/:id/register",
   protect,
@@ -49,7 +78,14 @@ router.post(
   registerForEvent
 );
 
-// Student cancels event registration
+/*
+================================================
+CANCEL EVENT REGISTRATION
+Route: DELETE /api/events/:id/register
+Access: Student
+================================================
+*/
+
 router.delete(
   "/:id/register",
   protect,
@@ -57,7 +93,14 @@ router.delete(
   cancelRegistration
 );
 
-// Event creator views registered students
+/*
+================================================
+GET REGISTERED USERS
+Route: GET /api/events/:id/registered-users
+Access: Alumni
+================================================
+*/
+
 router.get(
   "/:id/registered-users",
   protect,
@@ -65,7 +108,28 @@ router.get(
   getRegisteredUsers
 );
 
-// Event creator updates an event
+/*
+================================================
+GET ONE EVENT BY ID
+Route: GET /api/events/:id
+Access: Logged-in users
+================================================
+*/
+
+router.get(
+  "/:id",
+  protect,
+  getEventById
+);
+
+/*
+================================================
+UPDATE EVENT
+Route: PATCH /api/events/:id
+Access: Alumni
+================================================
+*/
+
 router.patch(
   "/:id",
   protect,
@@ -73,7 +137,14 @@ router.patch(
   updateEvent
 );
 
-// Event creator deletes an event
+/*
+================================================
+DELETE EVENT
+Route: DELETE /api/events/:id
+Access: Alumni
+================================================
+*/
+
 router.delete(
   "/:id",
   protect,
