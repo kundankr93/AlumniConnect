@@ -18,96 +18,179 @@ import {
   errorHandler,
 } from "./middleware/errorMiddleware.js";
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
 
+// Allowed frontend URLs
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
+
+// CORS middleware
+app.use(
+  cors({
+    origin: function (
+      origin,
+      callback
+    ) {
+      // Allow requests without an origin,
+      // such as Postman
+      if (
+        !origin ||
+        allowedOrigins.includes(
+          origin
+        )
+      ) {
+        return callback(
+          null,
+          true
+        );
+      }
+
+      return callback(
+        new Error(
+          "Not allowed by CORS"
+        )
+      );
+    },
+
+    credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  })
+);
+
 // Security headers
 app.use(helmet());
 
+// Parse JSON request body
+app.use(express.json());
+
 // Limit repeated API requests
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs:
+    15 * 60 * 1000,
+
   max: 200,
+
   standardHeaders: true,
+
   legacyHeaders: false,
+
   message: {
     success: false,
+
     message:
       "Too many requests. Please try again later.",
   },
 });
 
-app.use("/api", apiLimiter);
-
-// General middleware
-app.use(cors());
-app.use(express.json());
+// Apply rate limiter
+// to all API routes
+app.use(
+  "/api",
+  apiLimiter
+);
 
 // Home route
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message:
-      "AlumniConnect API is running",
-  });
-});
+app.get(
+  "/",
+  (req, res) => {
+    return res
+      .status(200)
+      .json({
+        success: true,
 
-// API routes
+        message:
+          "AlumniConnect API is running",
+      });
+  }
+);
+
+// Authentication routes
 app.use(
   "/api/auth",
   authRoutes
 );
 
+// Alumni routes
 app.use(
   "/api/alumni",
   alumniRoutes
 );
 
+// Mentorship routes
 app.use(
   "/api/mentorship",
   mentorshipRoutes
 );
 
+// Community post routes
 app.use(
   "/api/posts",
   postRoutes
 );
 
+// Connection routes
 app.use(
   "/api/connections",
   connectionRoutes
 );
 
+// Event routes
 app.use(
   "/api/events",
   eventRoutes
 );
 
-// These must always remain after all routes
+// These middleware must remain
+// after all API routes
 app.use(notFound);
 
 app.use(errorHandler);
 
+// Server port
 const PORT =
-  process.env.PORT || 5000;
+  process.env.PORT ||
+  5000;
 
-const startServer = async () => {
-  try {
-    await connectDB();
+// Connect database
+// and start server
+const startServer =
+  async () => {
+    try {
+      await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(
-        `Server is running on port ${PORT}`
+      app.listen(
+        PORT,
+        () => {
+          console.log(
+            `Server is running on port ${PORT}`
+          );
+        }
       );
-    });
-  } catch (error) {
-    console.error(
-      `Failed to start server: ${error.message}`
-    );
+    } catch (error) {
+      console.error(
+        `Failed to start server: ${error.message}`
+      );
 
-    process.exit(1);
-  }
-};
+      process.exit(1);
+    }
+  };
 
 startServer();

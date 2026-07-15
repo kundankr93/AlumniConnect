@@ -24,7 +24,10 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["student", "alumni"],
+      enum: [
+        "student",
+        "alumni",
+      ],
       required: true,
     },
 
@@ -42,6 +45,7 @@ const userSchema = new mongoose.Schema(
 
     graduationYear: {
       type: Number,
+      default: null,
     },
 
     company: {
@@ -54,6 +58,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+    },
+
+    // Skills entered from Edit Profile
+    skills: {
+      type: [String],
+      default: [],
     },
 
     bio: {
@@ -73,6 +83,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model(
+  "User",
+  userSchema
+);
 
 export default User;

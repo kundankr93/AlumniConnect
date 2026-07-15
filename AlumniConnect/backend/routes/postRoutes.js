@@ -9,57 +9,60 @@ import {
   updatePost,
   deletePost,
 } from "../controllers/postController.js";
+
 import {
   protect,
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// View all posts
+// Create a new post
+router.post(
+  "/",
+  protect,
+  createPost
+);
+
+// Get all posts
 router.get(
   "/",
   protect,
   getAllPosts
 );
 
-// Create a post
-router.post(
-  "/",
-  protect,
-  createPost
-);
-// Update own post
-router.patch(
-  "/:id",
-  protect,
-  updatePost
-);
-
-// Delete own post
-router.delete(
-  "/:id",
-  protect,
-  deletePost
-);
 // Like or unlike a post
 router.patch(
-  "/:id/like",
+  "/:postId/like",
   protect,
   toggleLikePost
 );
 
 // Add a comment
 router.post(
-  "/:id/comments",
+  "/:postId/comments",
   protect,
   addComment
 );
 
-// Delete own comment
+// Delete a comment
 router.delete(
   "/:postId/comments/:commentId",
   protect,
   deleteComment
+);
+
+// Update a post
+router.patch(
+  "/:postId",
+  protect,
+  updatePost
+);
+
+// Delete a post
+router.delete(
+  "/:postId",
+  protect,
+  deletePost
 );
 
 export default router;

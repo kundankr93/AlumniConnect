@@ -4,53 +4,34 @@ import {
   registerUser,
   loginUser,
   getMyProfile,
+  updateMyProfile,
 } from "../controllers/authController.js";
 
 import {
   protect,
-  authorizeRoles,
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-
-router.post("/login", loginUser);
-
-router.get("/me", protect, getMyProfile);
-
-// Only students can access this route
-router.get(
-  "/student-only",
-  protect,
-  authorizeRoles("student"),
-  (req, res) => {
-    return res.status(200).json({
-      success: true,
-      message: "Welcome to the student-only route",
-      user: {
-        name: req.user.name,
-        role: req.user.role,
-      },
-    });
-  }
+router.post(
+  "/register",
+  registerUser
 );
 
-// Only alumni can access this route
+router.post(
+  "/login",
+  loginUser
+);
+
 router.get(
-  "/alumni-only",
+  "/profile",
   protect,
-  authorizeRoles("alumni"),
-  (req, res) => {
-    return res.status(200).json({
-      success: true,
-      message: "Welcome to the alumni-only route",
-      user: {
-        name: req.user.name,
-        role: req.user.role,
-      },
-    });
-  }
+  getMyProfile
+);
+router.patch(
+  "/profile",
+  protect,
+  updateMyProfile
 );
 
 export default router;

@@ -84,65 +84,114 @@ export const toggleLikePost = async (
   res
 ) => {
   try {
-    const post = await Post.findById(
-      req.params.id
-    );
+    // The route uses:
+    // /:postId/like
+    // Therefore, use req.params.postId
+
+    const { postId } = req.params;
+
+    const post =
+      await Post.findById(
+        postId
+      );
 
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
+      return res
+        .status(404)
+        .json({
+          success: false,
+
+          message:
+            "Post not found",
+        });
     }
 
-    const userId = req.user._id.toString();
+    const userId =
+      req.user._id.toString();
 
-    const alreadyLiked = post.likes.some(
-      (like) =>
-        like.toString() === userId
-    );
+    // Check whether the current
+    // user has already liked the post
+
+    const alreadyLiked =
+      post.likes.some(
+        (like) =>
+          like.toString() ===
+          userId
+      );
 
     let message;
 
+    // Unlike the post
+
     if (alreadyLiked) {
-      post.likes = post.likes.filter(
-        (like) =>
-          like.toString() !== userId
+      post.likes =
+        post.likes.filter(
+          (like) =>
+            like.toString() !==
+            userId
+        );
+
+      message =
+        "Like removed successfully";
+    }
+
+    // Like the post
+
+    else {
+      post.likes.push(
+        req.user._id
       );
 
-      message = "Like removed successfully";
-    } else {
-      post.likes.push(req.user._id);
-
-      message = "Post liked successfully";
+      message =
+        "Post liked successfully";
     }
 
     await post.save();
 
-    return res.status(200).json({
-      success: true,
-      message,
-      likesCount: post.likes.length,
-      liked: !alreadyLiked,
-      likes: post.likes,
-    });
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message,
+
+        liked:
+          !alreadyLiked,
+
+        likesCount:
+          post.likes.length,
+
+        likes:
+          post.likes,
+      });
   } catch (error) {
     console.error(
-      `Toggle post like error: ${error.message}`
+      "Toggle post like error:",
+      error.message
     );
 
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid post ID",
-      });
+    if (
+      error.name ===
+      "CastError"
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Invalid post ID",
+        });
     }
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Server error while updating post like",
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+
+        message:
+          "Server error while updating post like",
+      });
   }
 };
 
@@ -153,67 +202,113 @@ export const addComment = async (
   try {
     const { text } = req.body;
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Comment text is required",
-      });
+    // Check whether comment is empty
+    if (
+      !text ||
+      !text.trim()
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message:
+            "Comment text is required",
+        });
     }
 
-    const post = await Post.findById(
-      req.params.id
-    );
+    // Route contains :postId
+    const { postId } =
+      req.params;
+
+    // Find the selected post
+    const post =
+      await Post.findById(
+        postId
+      );
 
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message:
+            "Post not found",
+        });
     }
 
-    post.comments.push({
+    // Create comment object
+    const newComment = {
       user: req.user._id,
       text: text.trim(),
-    });
+    };
 
+    // Add comment to post
+    post.comments.push(
+      newComment
+    );
+
+    // Save updated post
     await post.save();
 
-    // Populate users inside the comments array
-    await post.populate(
-      "comments.user",
-      "name role profileImage"
-    );
-
-    // Get the newly added comment
-    const newComment =
+    // Get newly created comment
+    const createdComment =
       post.comments[
-        post.comments.length - 1
+        post.comments.length -
+          1
       ];
 
-    return res.status(201).json({
-      success: true,
-      message: "Comment added successfully",
-      comment: newComment,
-      commentsCount:
-        post.comments.length,
+    // Populate user details
+    await post.populate({
+      path: "comments.user",
+      select:
+        "name email role profileImage",
     });
+
+    // Find populated comment
+    const populatedComment =
+      post.comments.id(
+        createdComment._id
+      );
+
+    return res
+      .status(201)
+      .json({
+        success: true,
+
+        message:
+          "Comment added successfully",
+
+        comment:
+          populatedComment,
+      });
   } catch (error) {
     console.error(
-      `Add comment error: ${error.message}`
+      "Add comment error:",
+      error.message
     );
 
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid post ID",
-      });
+    if (
+      error.name ===
+      "CastError"
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Invalid post ID",
+        });
     }
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Server error while adding comment",
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+
+        message:
+          "Server error while adding comment",
+      });
   }
 };
 
@@ -291,129 +386,214 @@ export const deleteComment = async (
   }
 };
 
-export const updatePost = async (req, res) => {
+export const updatePost = async (
+  req,
+  res
+) => {
   try {
-    const { content, image } = req.body;
+    const {
+      content,
+      image,
+    } = req.body;
 
-    const post = await Post.findById(req.params.id);
+    // Route uses :postId
+    const { postId } =
+      req.params;
+
+    const post =
+      await Post.findById(
+        postId
+      );
 
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message:
+            "Post not found",
+        });
     }
 
-    // Only the post author can update the post
+    // Only the author can
+    // update the post
     if (
       post.author.toString() !==
       req.user._id.toString()
     ) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You can update only your own post",
-      });
-    }
-
-    // Update content only when it is provided
-    if (content !== undefined) {
-      if (
-        typeof content !== "string" ||
-        !content.trim()
-      ) {
-        return res.status(400).json({
+      return res
+        .status(403)
+        .json({
           success: false,
           message:
-            "Post content cannot be empty",
+            "You can update only your own post",
         });
-      }
-
-      post.content = content.trim();
     }
 
-    // Update image only when it is provided
-    if (image !== undefined) {
+    // Update content
+    if (
+      content !== undefined
+    ) {
+      if (
+        typeof content !==
+          "string" ||
+        !content.trim()
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Post content cannot be empty",
+          });
+      }
+
+      post.content =
+        content.trim();
+    }
+
+    // Update image
+    if (
+      image !== undefined
+    ) {
       post.image = image;
     }
 
     await post.save();
 
+    // Populate author details
     await post.populate(
       "author",
       "name email role profileImage"
     );
 
-    return res.status(200).json({
-      success: true,
-      message:
-        "Post updated successfully",
-      post,
-    });
-  } catch (error) {
-    console.error(
-      `Update post error: ${error.message}`
+    // Populate comment users
+    await post.populate(
+      "comments.user",
+      "name email role profileImage"
     );
 
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid post ID",
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Post updated successfully",
+
+        post,
       });
+  } catch (error) {
+    console.error(
+      "Update post error:",
+      error.message
+    );
+
+    if (
+      error.name ===
+      "CastError"
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Invalid post ID",
+        });
     }
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Server error while updating post",
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+
+        message:
+          "Server error while updating post",
+      });
   }
 };
 
-export const deletePost = async (req, res) => {
+export const deletePost = async (
+  req,
+  res
+) => {
   try {
-    const post = await Post.findById(req.params.id);
+    // Route uses :postId
+    const { postId } =
+      req.params;
+
+    const post =
+      await Post.findById(
+        postId
+      );
 
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
+      return res
+        .status(404)
+        .json({
+          success: false,
+
+          message:
+            "Post not found",
+        });
     }
 
-    // Only the post author can delete the post
+    // Only the author can
+    // delete the post
     if (
       post.author.toString() !==
       req.user._id.toString()
     ) {
-      return res.status(403).json({
-        success: false,
-        message: "You can delete only your own post",
-      });
+      return res
+        .status(403)
+        .json({
+          success: false,
+
+          message:
+            "You can delete only your own post",
+        });
     }
 
     await post.deleteOne();
 
-    return res.status(200).json({
-      success: true,
-      message: "Post deleted successfully",
-    });
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Post deleted successfully",
+
+        postId,
+      });
   } catch (error) {
     console.error(
-      `Delete post error: ${error.message}`
+      "Delete post error:",
+      error.message
     );
 
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid post ID",
-      });
+    if (
+      error.name ===
+      "CastError"
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Invalid post ID",
+        });
     }
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Server error while deleting post",
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+
+        message:
+          "Server error while deleting post",
+      });
   }
 };

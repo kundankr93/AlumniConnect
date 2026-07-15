@@ -1,23 +1,38 @@
 import jwt from "jsonwebtoken";
+
 import User from "../models/User.js";
 
-export const protect = async (req, res, next) => {
+// Verify JWT token
+export const protect = async (
+  req,
+  res,
+  next
+) => {
   try {
-    let token;
-
-    const authHeader = req.headers.authorization;
+    const authHeader =
+      req.headers.authorization;
 
     if (
-      authHeader &&
-      authHeader.startsWith("Bearer ")
+      !authHeader ||
+      !authHeader.startsWith(
+        "Bearer "
+      )
     ) {
-      token = authHeader.split(" ")[1];
+      return res.status(401).json({
+        success: false,
+        message:
+          "Authentication required. Please log in.",
+      });
     }
+
+    const token =
+      authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized. No token provided",
+        message:
+          "Authentication token was not found.",
       });
     }
 
@@ -26,14 +41,16 @@ export const protect = async (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    const user = await User.findById(
-      decoded.userId
-    ).select("-password");
+    const user =
+      await User.findById(
+        decoded.id
+      ).select("-password");
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User no longer exists",
+        message:
+          "The user associated with this token was not found.",
       });
     }
 
@@ -41,21 +58,58 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.error(
+      "Authentication error:",
+      error.message
+    );
+
+    if (
+      error.name ===
+      "TokenExpiredError"
+    ) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Your login session has expired. Please log in again.",
+      });
+    }
+
     return res.status(401).json({
       success: false,
-      message: "Not authorized. Invalid or expired token",
+      message:
+        "Invalid authentication token. Please log in again.",
     });
   }
 };
 
-export const authorizeRoles = (...allowedRoles) => {
-  return (req, res, next) => {
-    if (!allowedRoles.includes(req.user.role)) {
+// Allow only selected user roles
+export const authorizeRoles = (
+  ...allowedRoles
+) => {
+  return (
+    req,
+    res,
+    next
+  ) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Authentication is required.",
+      });
+    }
+
+    if (
+      !allowedRoles.includes(
+        req.user.role
+      )
+    ) {
       return res.status(403).json({
         success: false,
-        message: `Access denied. Only ${allowedRoles.join(
-          " or "
-        )} can access this route`,
+        message:
+          `Access denied. This route is only available to: ${allowedRoles.join(
+            ", "
+          )}`,
       });
     }
 
