@@ -6,7 +6,9 @@ function ProtectedRoute({
   children,
 }) {
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
 
   if (!token) {
     return (
