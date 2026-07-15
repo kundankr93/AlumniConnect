@@ -27,6 +27,9 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+
+  // Deployed Render frontend
+  "https://alumniconnect-frontend-d2uw.onrender.com",
 ];
 
 // CORS middleware
@@ -49,6 +52,11 @@ app.use(
           true
         );
       }
+
+      console.log(
+        "Blocked CORS origin:",
+        origin
+      );
 
       return callback(
         new Error(
@@ -79,26 +87,29 @@ app.use(
 app.use(helmet());
 
 // Parse JSON request body
-app.use(express.json());
+app.use(
+  express.json()
+);
 
 // Limit repeated API requests
-const apiLimiter = rateLimit({
-  windowMs:
-    15 * 60 * 1000,
+const apiLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
 
-  max: 200,
+    max: 200,
 
-  standardHeaders: true,
+    standardHeaders: true,
 
-  legacyHeaders: false,
+    legacyHeaders: false,
 
-  message: {
-    success: false,
+    message: {
+      success: false,
 
-    message:
-      "Too many requests. Please try again later.",
-  },
-});
+      message:
+        "Too many requests. Please try again later.",
+    },
+  });
 
 // Apply rate limiter
 // to all API routes
@@ -160,9 +171,13 @@ app.use(
 
 // These middleware must remain
 // after all API routes
-app.use(notFound);
+app.use(
+  notFound
+);
 
-app.use(errorHandler);
+app.use(
+  errorHandler
+);
 
 // Server port
 const PORT =
@@ -181,6 +196,10 @@ const startServer =
         () => {
           console.log(
             `Server is running on port ${PORT}`
+          );
+
+          console.log(
+            "CORS enabled for deployed frontend"
           );
         }
       );
