@@ -23,48 +23,36 @@ dotenv.config();
 
 const app = express();
 
-// Allowed frontend URLs
+/* ==========================
+   CORS Configuration
+========================== */
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
 
+  // Old frontend (optional)
   "https://alumniconnect-frontend-d2uw.onrender.com",
 
-  // Vercel frontend
+  // Current Vercel frontend
   "https://alumni-connect-silk-two.vercel.app",
 ];
 
-// CORS middleware
 app.use(
   cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-      // Allow requests without an origin,
-      // such as Postman
-      if (
-        !origin ||
-        allowedOrigins.includes(
-          origin
-        )
-      ) {
-        return callback(
-          null,
-          true
-        );
+    origin: (origin, callback) => {
+      // Allow Postman and server-to-server requests
+      if (!origin) {
+        return callback(null, true);
       }
 
-      console.log(
-        "Blocked CORS origin:",
-        origin
-      );
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-      return callback(
-        new Error(
-          "Not allowed by CORS"
-        )
-      );
+      console.log("Blocked Origin:", origin);
+
+      return callback(new Error("Not allowed by CORS"));
     },
 
     credentials: true,
@@ -85,133 +73,73 @@ app.use(
   })
 );
 
-// Security headers
+/* ==========================
+   Middleware
+========================== */
+
 app.use(helmet());
 
-// Parse JSON request body
-app.use(
-  express.json()
-);
+app.use(express.json());
 
-// Limit repeated API requests
-const apiLimiter =
-  rateLimit({
-    windowMs:
-      15 * 60 * 1000,
+app.use(express.urlencoded({ extended: true }));
 
-    max: 200,
+/* ==========================
+   Rate Limiter
+========================== */
 
-    standardHeaders: true,
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-    legacyHeaders: false,
+app.use("/api", apiLimiter);
 
-    message: {
-      success: false,
+/* ==========================
+   Routes
+========================== */
 
-      message:
-        "Too many requests. Please try again later.",
-    },
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "AlumniConnect API is running",
   });
+});
 
-// Apply rate limiter
-// to all API routes
-app.use(
-  "/api",
-  apiLimiter
-);
+app.use("/api/auth", authRoutes);
+app.use("/api/alumni", alumniRoutes);
+app.use("/api/mentorship", mentorshipRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/connections", connectionRoutes);
+app.use("/api/events", eventRoutes);
 
-// Home route
-app.get(
-  "/",
-  (req, res) => {
-    return res
-      .status(200)
-      .json({
-        success: true,
+/* ==========================
+   Error Middleware
+========================== */
 
-        message:
-          "AlumniConnect API is running",
-      });
+app.use(notFound);
+
+app.use(errorHandler);
+
+/* ==========================
+   Start Server
+========================== */
+
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log("CORS Enabled");
+    });
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
   }
-);
-
-// Authentication routes
-app.use(
-  "/api/auth",
-  authRoutes
-);
-
-// Alumni routes
-app.use(
-  "/api/alumni",
-  alumniRoutes
-);
-
-// Mentorship routes
-app.use(
-  "/api/mentorship",
-  mentorshipRoutes
-);
-
-// Community post routes
-app.use(
-  "/api/posts",
-  postRoutes
-);
-
-// Connection routes
-app.use(
-  "/api/connections",
-  connectionRoutes
-);
-
-// Event routes
-app.use(
-  "/api/events",
-  eventRoutes
-);
-
-// These middleware must remain
-// after all API routes
-app.use(
-  notFound
-);
-
-app.use(
-  errorHandler
-);
-
-// Server port
-const PORT =
-  process.env.PORT ||
-  5000;
-
-// Connect database
-// and start server
-const startServer =
-  async () => {
-    try {
-      await connectDB();
-
-      app.listen(
-        PORT,
-        () => {
-          console.log(
-            `Server is running on port ${PORT}`
-          );
-
-          console.log(
-            "CORS enabled for deployed frontend"
-          );
-        }
-      );
-    } catch (error) {
-      console.error(
-        `Failed to start server: ${error.message}`
-      );
-
-      process.exit(1);
-    }
-  };
+};
 
 startServer();
