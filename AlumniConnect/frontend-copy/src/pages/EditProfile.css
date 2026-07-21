@@ -1,0 +1,327 @@
+.edit-profile-page {
+  min-height: 100vh;
+  background-color: #f4f7fc;
+}
+
+.edit-profile-header {
+  padding: 38px 7%;
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #4338ca
+    );
+}
+
+.edit-profile-back {
+  margin-bottom: 20px;
+  padding: 9px 15px;
+
+  color: white;
+
+  background-color:
+    rgba(
+      255,
+      255,
+      255,
+      0.16
+    );
+
+  border: none;
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.edit-profile-header h1 {
+  margin: 0;
+
+  font-size: 38px;
+}
+
+.edit-profile-header p {
+  margin: 10px 0 0;
+
+  color: #dbeafe;
+}
+
+.edit-profile-content {
+  width: 90%;
+  max-width: 900px;
+
+  margin: auto;
+
+  padding: 40px 0;
+}
+
+.edit-profile-card {
+  padding: 35px;
+
+  background-color: white;
+
+  border:
+    1px solid
+    #e5e7eb;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 28px
+    rgba(
+      15,
+      23,
+      42,
+      0.08
+    );
+}
+
+.edit-profile-card h2 {
+  margin:
+    0
+    0
+    28px;
+
+  color: #172554;
+}
+
+.edit-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap: 22px;
+}
+
+.edit-field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.edit-field label {
+  color: #334155;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.edit-field input {
+  width: 100%;
+
+  padding: 12px 14px;
+
+  color: #1e293b;
+
+  background-color: #f8fafc;
+
+  border:
+    1px solid
+    #cbd5e1;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+
+  outline: none;
+}
+
+.edit-field input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      37,
+      99,
+      235,
+      0.12
+    );
+}
+
+.edit-skills-field {
+  grid-column:
+    1 / -1;
+}
+
+.edit-field small {
+  color: #64748b;
+}
+
+.edit-profile-actions {
+  display: flex;
+
+  justify-content:
+    flex-end;
+
+  gap: 12px;
+
+  margin-top: 32px;
+}
+
+.edit-profile-actions button {
+  padding: 12px 20px;
+
+  border: none;
+  border-radius: 9px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.cancel-edit-button {
+  color: #475569;
+
+  background-color: #e2e8f0;
+}
+
+.save-profile-button {
+  color: white;
+
+  background-color: #2563eb;
+}
+
+.save-profile-button:hover {
+  background-color: #1d4ed8;
+}
+
+.save-profile-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.7;
+}
+
+.edit-success,
+.edit-error {
+  margin-bottom: 22px;
+
+  padding: 14px;
+
+  border-radius: 8px;
+
+  text-align: center;
+}
+
+.edit-success {
+  color: #166534;
+
+  background-color: #dcfce7;
+}
+
+.edit-error {
+  color: #991b1b;
+
+  background-color: #fee2e2;
+}
+
+.edit-profile-loading {
+  width: 90%;
+  max-width: 700px;
+
+  margin: 100px auto;
+
+  padding: 25px;
+
+  color: #64748b;
+
+  background-color: white;
+
+  border-radius: 10px;
+
+  text-align: center;
+}
+
+@media (
+  max-width: 650px
+) {
+  .edit-form-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .edit-skills-field {
+    grid-column: auto;
+  }
+
+  .edit-profile-card {
+    padding: 24px;
+  }
+
+  .edit-profile-actions {
+    flex-direction:
+      column-reverse;
+  }
+
+  .edit-profile-actions button {
+    width: 100%;
+  }
+}
+
+/* Description textarea */
+
+.edit-event-form textarea {
+  width: 100%;
+  min-height: 150px;
+
+  padding: 15px 17px;
+
+  color: #1f2937;
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 16px;
+  line-height: 1.6;
+
+  outline: none;
+
+  resize: vertical;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.edit-event-form textarea:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      37,
+      99,
+      235,
+      0.12
+    );
+}
+
+/* Character counter */
+
+.description-count {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  text-align: right;
+}

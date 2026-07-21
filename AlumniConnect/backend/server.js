@@ -28,8 +28,10 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
 
-  // Deployed Render frontend
   "https://alumniconnect-frontend-d2uw.onrender.com",
+
+  // Vercel frontend
+  "https://alumni-connect-silk-two.vercel.app",
 ];
 
 // CORS middleware

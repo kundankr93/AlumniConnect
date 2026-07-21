@@ -1,81 +1,67 @@
 # AlumniConnect
 
-AlumniConnect is a full-stack alumni networking platform designed to connect students with alumni for mentorship, professional networking, career guidance, events, and knowledge sharing.
-
-The backend is built using Node.js, Express.js, MongoDB, and JWT authentication.
-
----
+AlumniConnect is a full-stack MERN web application designed to connect students with alumni. It allows students to discover alumni, build professional connections, request mentorship, participate in community discussions, and register for alumni events.
 
 ## Features
 
 ### Authentication
 
-- Student and alumni registration
-- User login
+- User registration and login
 - JWT-based authentication
+- Student and alumni roles
+- Protected routes
 - Role-based authorization
-- Protected API routes
 
 ### Alumni Discovery
 
-- View alumni profiles
-- Search and filter alumni
-- View professional and academic information
-
-### Mentorship
-
-- Students can send mentorship requests
-- Alumni can view received requests
-- Alumni can accept or reject requests
-- Students can view mentorship request status
-
-### Posts
-
-- Create posts
-- View all posts
-- Update own posts
-- Delete own posts
-- Like and unlike posts
-- Add comments
-- Delete own comments
+- Browse alumni profiles
+- View professional information
+- Search alumni
+- View skills, company, job title, branch, and graduation year
 
 ### Connections
 
 - Send connection requests
-- View received requests
-- Accept or reject requests
-- View accepted connections
-- Remove connections
-- Prevent duplicate requests
-- Prevent users from connecting with themselves
+- Accept or reject connection requests
+- View accepted professional connections
+
+### Mentorship
+
+- Students can send mentorship requests to alumni
+- Alumni can accept or reject mentorship requests
+- Students can track mentorship request status
+
+### Community Posts
+
+- Create community posts
+- Like and unlike posts
+- Add comments
+- Edit your own posts
+- Delete your own posts
 
 ### Events
 
 - Alumni can create events
-- Students and alumni can view upcoming events
+- Alumni can edit or delete their own events
 - Students can register for events
-- Prevent duplicate event registration
-- Students can view registered events
 - Students can cancel event registration
-- Event creators can view registered students
-- Event creators can update events
-- Event creators can delete events
+- Alumni can view registered students
 
-### Security
+### User Profile
 
-- Password hashing
-- JWT authentication
-- Role-based authorization
-- Ownership authorization
-- Helmet security headers
-- API rate limiting
-- CORS configuration
-- Global error handling
-- 404 route handling
+- View profile information
+- Update profile details
+- Add skills and professional information
 
----
+## Technologies Used
 
-## Technology Stack
+### Frontend
+
+- React.js
+- Vite
+- React Router
+- Axios
+- CSS
 
 ### Backend
 
@@ -83,64 +69,35 @@ The backend is built using Node.js, Express.js, MongoDB, and JWT authentication.
 - Express.js
 - MongoDB
 - Mongoose
-
-### Authentication and Security
-
 - JSON Web Token
-- bcrypt
+- bcrypt.js
+
+### Security
+
 - Helmet
 - Express Rate Limit
 - CORS
-
-### Development Tools
-
-- Visual Studio Code
-- Thunder Client
-- MongoDB Atlas
-- Git
-- GitHub
-- Nodemon
-
----
+- JWT authentication
+- Role-based authorization
 
 ## Project Structure
 
 ```text
-backend/
+AlumniConnect/
 │
-├── config/
-│   └── db.js
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   └── server.js
 │
-├── controllers/
-│   ├── alumniController.js
-│   ├── authController.js
-│   ├── connectionController.js
-│   ├── eventController.js
-│   ├── mentorshipController.js
-│   └── postController.js
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   └── pages/
+│   └── package.json
 │
-├── middleware/
-│   ├── authMiddleware.js
-│   └── errorMiddleware.js
-│
-├── models/
-│   ├── Connection.js
-│   ├── Event.js
-│   ├── MentorshipRequest.js
-│   ├── Post.js
-│   └── User.js
-│
-├── routes/
-│   ├── alumniRoutes.js
-│   ├── authRoutes.js
-│   ├── connectionRoutes.js
-│   ├── eventRoutes.js
-│   ├── mentorshipRoutes.js
-│   └── postRoutes.js
-│
-├── .env
-├── .env.example
-├── .gitignore
-├── package.json
-├── package-lock.json
-└── server.js
+└── README.md
